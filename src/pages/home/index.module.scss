@@ -1,0 +1,229 @@
+@use '@/styles/variables.scss' as *;
+
+.homePage {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F7F4 0%, $color-bg-page 30%);
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-lg $page-padding $spacing-xl;
+}
+
+.greeting {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.subGreeting {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.statCard {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(45, 184, 167, 0.1);
+}
+
+.statValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-top: 4rpx;
+}
+
+.warningCard {
+  margin: 0 $page-padding $spacing-lg;
+  background: linear-gradient(135deg, #FFF2E6 0%, #FFE8D9 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.warningHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.warningIcon {
+  font-size: 36rpx;
+  margin-right: $spacing-sm;
+}
+
+.warningTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-warning;
+  flex: 1;
+}
+
+.warningCount {
+  font-size: $font-size-sm;
+  color: $color-warning;
+  background: rgba(255, 125, 0, 0.15);
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.warningList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.warningItem {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.6);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.warningDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.dotDanger {
+  background: $color-error;
+}
+
+.dotWarning {
+  background: $color-warning;
+}
+
+.dotInfo {
+  background: $color-info;
+}
+
+.warningItemText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.arrowIcon {
+  color: $color-text-tertiary;
+  font-size: 24rpx;
+  margin-left: $spacing-sm;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-xl;
+}
+
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-sm;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.actionIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.actionLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  text-align: center;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.medicineList {
+  padding: 0 $page-padding;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  padding: 0 $spacing-lg;
+  height: 72rpx;
+  margin: 0 $page-padding $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.searchIcon {
+  font-size: 28rpx;
+  margin-right: $spacing-sm;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.searchPlaceholder {
+  color: $color-text-tertiary;
+}

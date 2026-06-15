@@ -1,0 +1,337 @@
+@use '@/styles/variables.scss' as *;
+
+.inventoryPage {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.headerSection {
+  background: linear-gradient(135deg, #2DB8A7 0%, #57D9C7 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+}
+
+.headerDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.progressInfo {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-lg;
+  gap: $spacing-lg;
+}
+
+.progressItem {
+  flex: 1;
+  text-align: center;
+}
+
+.progressValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+}
+
+.progressLabel {
+  font-size: $font-size-xs;
+  opacity: 0.8;
+  margin-top: 4rpx;
+}
+
+.actionBar {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-lg $page-padding;
+  background: $color-bg-card;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.primaryBtn {
+  background: $color-primary;
+  color: $color-text-white;
+}
+
+.secondaryBtn {
+  background: $color-bg-hover;
+  color: $color-text-primary;
+}
+
+.scanBtn {
+  background: $color-secondary-bg;
+  color: $color-secondary;
+}
+
+.btnIcon {
+  margin-right: 8rpx;
+  font-size: 28rpx;
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $page-padding;
+}
+
+.filterLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.filterOptions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.filterOption {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+
+  &.active {
+    background: $color-primary-bg;
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.medicineList {
+  padding: 0 $page-padding;
+}
+
+.inventoryItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.itemIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.itemSpec {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.itemStatus {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  flex-shrink: 0;
+}
+
+.statusNormal {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.statusLow {
+  background: $color-warning-bg;
+  color: $color-warning;
+}
+
+.statusExpired {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.quantityLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.quantityActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.qtyBtn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: $color-text-primary;
+
+  &:active {
+    background: $color-primary-bg;
+    color: $color-primary;
+  }
+}
+
+.qtyValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  min-width: 80rpx;
+  text-align: center;
+}
+
+.qtyUnit {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: normal;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.summaryInfo {
+  flex: 1;
+}
+
+.summaryText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.summaryValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.confirmBtn {
+  @include button-reset;
+  height: $button-height-lg;
+  padding: 0 $spacing-xl * 2;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.historySection {
+  margin-top: $spacing-xl;
+  padding: 0 $page-padding;
+}
+
+.historyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.historyCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.historyDate {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.historyOperator {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.historyInfo {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}

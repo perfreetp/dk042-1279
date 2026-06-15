@@ -1,0 +1,417 @@
+@use '@/styles/variables.scss' as *;
+
+.purchasePage {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 180rpx;
+}
+
+.headerSection {
+  background: linear-gradient(135deg, #FF8A3D 0%, #FFA85D 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+}
+
+.headerDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.statCard {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  text-align: center;
+}
+
+.statValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+  margin-top: 4rpx;
+}
+
+.tabBar {
+  display: flex;
+  background: $color-bg-card;
+  padding: $spacing-sm $page-padding;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.tabItem {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  position: relative;
+
+  &.active {
+    color: $color-secondary;
+    font-weight: $font-weight-semibold;
+    background: $color-secondary-bg;
+  }
+}
+
+.tabCount {
+  display: inline-block;
+  background: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-round;
+  margin-left: 8rpx;
+  min-width: 32rpx;
+  text-align: center;
+
+  .active & {
+    background: $color-secondary;
+  }
+}
+
+.seasonalTips {
+  margin: 0 $page-padding $spacing-lg;
+  background: linear-gradient(135deg, #E8F3FF 0%, #F3E8FF 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+}
+
+.tipsHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.tipsIcon {
+  font-size: 32rpx;
+  margin-right: $spacing-sm;
+}
+
+.tipsTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.tipsSeason {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(45, 184, 167, 0.1);
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.tipsContent {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.tipItem {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.tipCategory {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.tipMedicines {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.tipReason {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+  padding-top: 8rpx;
+  border-top: 1rpx dashed $color-border;
+}
+
+.listSection {
+  padding: 0 $page-padding;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.purchaseItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+}
+
+.itemCheckbox {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  border: 3rpx solid $color-border;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-fast;
+
+  &.checked {
+    background: $color-success;
+    border-color: $color-success;
+
+    .checkIcon {
+      opacity: 1;
+    }
+  }
+}
+
+.checkIcon {
+  color: $color-text-white;
+  font-size: 24rpx;
+  opacity: 0;
+  transition: opacity $transition-fast;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.itemSpec {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-top: 4rpx;
+  @include text-ellipsis;
+}
+
+.itemCategory {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.itemMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itemQuantity {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.quantityNum {
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.itemReason {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  background: $color-warning-bg;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.itemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.consumptionInfo {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.deleteBtn {
+  font-size: $font-size-xs;
+  color: $color-error;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+
+  &:active {
+    background: $color-error-bg;
+  }
+}
+
+.purchasedItem {
+  opacity: 0.6;
+
+  .itemName {
+    text-decoration: line-through;
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  z-index: 100;
+}
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.checkboxAll {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  border: 3rpx solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.checked {
+    background: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+.summaryInfo {
+  flex: 1;
+  text-align: right;
+}
+
+.summaryText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.summaryValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-secondary;
+}
+
+.actionBtn {
+  @include button-reset;
+  height: $button-height-lg;
+  padding: 0 $spacing-xl;
+  background: $color-secondary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  min-width: 180rpx;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.secondary {
+    background: $color-bg-hover;
+    color: $color-text-primary;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80rpx 0;
+  color: $color-text-tertiary;
+}
+
+.emptyIcon {
+  font-size: 100rpx;
+  display: block;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+}

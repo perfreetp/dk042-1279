@@ -1,0 +1,311 @@
+@use '@/styles/variables.scss' as *;
+
+.taboosPage {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 40rpx;
+}
+
+.headerSection {
+  background: linear-gradient(135deg, #F53F3F 0%, #FF7875 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+}
+
+.headerDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.memberTabs {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+  overflow-x: auto;
+  padding-bottom: 8rpx;
+}
+
+.memberTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-lg;
+  flex-shrink: 0;
+  min-width: 120rpx;
+  transition: all $transition-base;
+
+  &.active {
+    background: rgba(255, 255, 255, 0.95);
+    color: $color-error;
+  }
+}
+
+.memberAvatar {
+  font-size: 48rpx;
+  margin-bottom: 8rpx;
+}
+
+.memberName {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  text-align: center;
+}
+
+.memberBadge {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  background: $color-error;
+  color: $color-text-white;
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-round;
+  min-width: 28rpx;
+  text-align: center;
+}
+
+.section {
+  margin: $spacing-lg $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionIcon {
+  font-size: 32rpx;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.infoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  width: 120rpx;
+}
+
+.infoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  flex: 1;
+  line-height: 1.6;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  background: $color-error-bg;
+  color: $color-error;
+
+  &.warning {
+    background: $color-warning-bg;
+    color: $color-warning;
+  }
+
+  &.info {
+    background: $color-info-bg;
+    color: $color-info;
+  }
+}
+
+.addTagBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  border: 1rpx dashed $color-border;
+}
+
+.medicineList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.medicineTabooItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-error-bg;
+  border-radius: $radius-md;
+  gap: $spacing-md;
+}
+
+.medicineIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-bg-card;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.medicineInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.medicineName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.tabooReason {
+  font-size: $font-size-xs;
+  color: $color-error;
+  display: block;
+  margin-top: 4rpx;
+  @include text-ellipsis;
+}
+
+.removeBtn {
+  font-size: $font-size-xs;
+  color: $color-error;
+  padding: 8rpx 16rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+
+  &:active {
+    background: rgba(245, 63, 63, 0.1);
+  }
+}
+
+.allTaboosSection {
+  margin: 0 $page-padding;
+}
+
+.allTaboosTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.taboosSummary {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.summaryHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.summaryAvatar {
+  font-size: 40rpx;
+  margin-right: $spacing-md;
+}
+
+.summaryName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.summaryCount {
+  font-size: $font-size-sm;
+  color: $color-error;
+  background: $color-error-bg;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.summaryDetails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.summaryItem {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  background: $color-bg-hover;
+  padding: 6rpx 16rpx;
+  border-radius: $radius-xs;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80rpx 0;
+  color: $color-text-tertiary;
+}
+
+.emptyIcon {
+  font-size: 100rpx;
+  display: block;
+  margin-bottom: 20rpx;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+}

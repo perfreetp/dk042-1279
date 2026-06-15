@@ -1,0 +1,294 @@
+@use '@/styles/variables.scss' as *;
+
+.addPage {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.formSection {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.sectionIcon {
+  font-size: 28rpx;
+  margin-right: $spacing-sm;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.formItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.formLabel {
+  width: 180rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+  padding-top: 8rpx;
+}
+
+.formControl {
+  flex: 1;
+  min-width: 0;
+}
+
+.formInput {
+  width: 100%;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: $color-text-tertiary;
+  }
+}
+
+.formTextarea {
+  width: 100%;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.6;
+  min-height: 100rpx;
+
+  &::placeholder {
+    color: $color-text-tertiary;
+  }
+}
+
+.uploadBtn {
+  @include button-reset;
+  width: 120rpx;
+  height: 120rpx;
+  border: 2rpx dashed $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.uploadIcon {
+  font-size: 36rpx;
+}
+
+.uploadText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.categoryItem {
+  @include button-reset;
+  padding: 12rpx 24rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.categoryItemActive {
+  color: $color-primary;
+  background: $color-primary-bg;
+}
+
+.memberList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.memberItem {
+  @include button-reset;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 20rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.memberItemActive {
+  background: $color-primary-bg;
+  color: $color-primary;
+}
+
+.memberAvatar {
+  font-size: 24rpx;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.switchLabel {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.switchDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.submitBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &[disabled] {
+    background: $color-text-tertiary;
+  }
+}
+
+.scanTips {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: linear-gradient(90deg, $color-primary-bg 0%, #E8F9F6 100%);
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+}
+
+.scanIcon {
+  font-size: 32rpx;
+}
+
+.scanText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.scanBtn {
+  @include button-reset;
+  padding: 12rpx 24rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  border-radius: $radius-round;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.stepperBtn {
+  @include button-reset;
+  width: 64rpx;
+  height: 56rpx;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  background: transparent;
+
+  &:active {
+    background: $color-border;
+  }
+}
+
+.stepperInput {
+  width: 80rpx;
+  text-align: center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  background: $color-bg-card;
+  height: 56rpx;
+  line-height: 56rpx;
+}

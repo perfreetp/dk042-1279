@@ -1,0 +1,42 @@
+@use '@/styles/variables.scss' as *;
+
+.categoryScroll {
+  @include scroll-x-container;
+  white-space: nowrap;
+  padding: $spacing-sm 0;
+}
+
+.categoryList {
+  display: inline-flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+}
+
+.categoryItem {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+  flex-shrink: 0;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+}
+
+.active {
+  font-weight: $font-weight-semibold;
+}
+
+.categoryIcon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.categoryName {
+  font-size: $font-size-sm;
+}

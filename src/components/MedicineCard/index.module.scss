@@ -1,0 +1,169 @@
+@use '@/styles/variables.scss' as *;
+
+.medicineCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.categoryIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.medicineInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.medicineName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.medicineSpec {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.statusBadge {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.statusDanger {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
+.statusWarning {
+  background: $color-warning-bg;
+  color: $color-warning;
+}
+
+.statusInfo {
+  background: $color-info-bg;
+  color: $color-info;
+}
+
+.statusSuccess {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.cardBody {
+  margin-bottom: $spacing-sm;
+}
+
+.stockInfo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.stockLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.stockValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.stockUnit {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+  margin-left: 4rpx;
+}
+
+.stockBar {
+  height: 8rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.stockProgress {
+  height: 100%;
+  background: $color-success;
+  border-radius: $radius-round;
+  transition: width $transition-base;
+}
+
+.stockLow {
+  background: $color-error;
+}
+
+.stockMedium {
+  background: $color-warning;
+}
+
+.warningRow {
+  display: flex;
+  align-items: center;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.warningIcon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.warningText {
+  font-size: $font-size-sm;
+  color: $color-warning;
+}
+
+.consumptionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.consumptionLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.consumptionValue {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
