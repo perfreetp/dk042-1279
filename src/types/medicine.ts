@@ -77,6 +77,8 @@ export interface PurchaseItem {
   unit: string
   reason: string
   isPurchased: boolean
+  purchaserId?: string
+  purchaserName?: string
   purchaseDate?: string
   estimatedPrice?: number
 }
@@ -125,4 +127,57 @@ export interface WarningItem {
   medicineName: string
   message: string
   level: 'info' | 'warning' | 'danger'
+}
+
+// ================ 新增：家庭动态类型 ================
+
+// 动态类型
+export type ActivityType =
+  | 'inventory'      // 盘点
+  | 'add_medicine'   // 添加药品
+  | 'mark_purchased' // 标记已购买
+  | 'use_medicine'   // 使用药品
+  | 'add_member'     // 添加成员
+  | 'add_taboo'      // 添加禁忌
+  | 'remove_taboo'   // 移除禁忌
+  | 'add_allergy'    // 添加过敏
+  | 'remove_allergy' // 移除过敏
+
+// 动态状态
+export type ActivityStatus = 'pending' | 'confirmed'
+
+// 家庭动态记录
+export interface FamilyActivity {
+  id: string
+  type: ActivityType
+  operatorId: string
+  operatorName: string
+  operatorAvatar: string
+  date: string
+  status: ActivityStatus
+  confirmerId?: string
+  confirmerName?: string
+  confirmDate?: string
+  title: string
+  description: string
+  icon: string
+  // 根据类型携带的扩展数据
+  details?: {
+    medicineId?: string
+    medicineName?: string
+    memberId?: string
+    memberName?: string
+    quantity?: number
+    changeSummary?: string
+  }
+}
+
+// 持久化存储的数据结构
+export interface PersistedData {
+  medicines: Medicine[]
+  familyMembers: FamilyMember[]
+  purchaseItems: PurchaseItem[]
+  inventoryRecords: InventoryRecord[]
+  activities: FamilyActivity[]
+  lastPersistedAt: string
 }

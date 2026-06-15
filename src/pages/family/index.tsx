@@ -3,10 +3,17 @@ import { View, Text, ScrollView, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
-import { inventoryRecords } from '@/data/mockData'
 
 const FamilyPage: React.FC = () => {
-  const { familyMembers, medicines, inventoryRecords: storeInventoryRecords } = useMedicineStore()
+  const {
+    familyMembers,
+    medicines,
+    inventoryRecords,
+    activities,
+    currentUserId,
+    confirmActivity,
+    getPendingActivitiesCount
+  } = useMedicineStore()
 
   const handleInvite = () => {
     Taro.showModal({
@@ -33,50 +40,30 @@ const FamilyPage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/member-manage/index' })
   }
 
-  const recentActivities = [
-    {
-      id: 1,
-      avatar: '👨',
-      name: '爸爸',
-      action: '完成了库存盘点',
-      detail: '检查了 10 种药品，调整了 2 种数量',
-      time: '今天 10:30',
-      status: '已确认'
-    },
-    {
-      id: 2,
-      avatar: '👩',
-      name: '妈妈',
-      action: '添加了新药品',
-      detail: '维生素C泡腾片',
-      time: '昨天 15:20',
-      status: '待确认'
-    },
-    {
-      id: 3,
-      avatar: '👨',
-      name: '爸爸',
-      action: '标记了禁忌药品',
-      detail: '阿莫西林 - 青霉素过敏',
-      time: '3天前',
-      status: '已确认'
-    },
-    {
-      id: 4,
-      avatar: '👩',
-      name: '妈妈',
-      action: '完成了采购',
-      detail: '感冒灵颗粒、创可贴',
-      time: '5天前',
-      status: '已确认'
-    }
-  ]
+  const handleConfirmActivity = (activityId: string, activityTitle: string) => {
+    Taro.showModal({
+      title: '确认动态',
+      content: `确认「${activityTitle}」这条动态吗？`,
+      confirmText: '确认',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          confirmActivity(activityId, currentUserId)
+          Taro.showToast({ title: '已确认', icon: 'success' })
+        }
+      }
+    })
+  }
+
+  const sortedActivities = [...activities].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
+  })
 
   const stats = [
     { icon: '💊', value: medicines.length, label: '药品总数' },
     { icon: '👨‍👩‍👧‍👦', value: familyMembers.length, label: '家庭成员' },
-    { icon: '✅', value: storeInventoryRecords.length, label: '盘点次数' },
-    { icon: '🔄', value: '实时', label: '同步状态' }
+    { icon: '✅', value: inventoryRecords.length, label: '盘点次数' },
+    { icon: '⏳', value: getPendingActivitiesCount(), label: '待确认数' }
   ]
 
   return (
@@ -159,21 +146,45 @@ const FamilyPage: React.FC = () => {
       <View className={styles.activitySection}>
         <Text className={styles.activityTitle}>最近动态</Text>
         <View className={styles.activityList}>
-          {recentActivities.map((activity) => (
+          {sortedActivities.map((activity) => (
             <View key={activity.id} className={styles.activityItem}>
               <View className={styles.activityAvatar}>
-                <Text>{activity.avatar}</Text>
+                <Text>{activity.operatorAvatar}</Text>
               </View>
               <View className={styles.activityContent}>
                 <Text className={styles.activityText}>
-                  <Text style={{ fontWeight: 500 }}>{activity.name}</Text> {activity.action}
+                  <Text style={{ fontWeight: 500 }}>{activity.operatorName}</Text> {activity.title}
                 </Text>
                 <Text className={styles.activityText} style={{ fontSize: '22rpx', color: '#86909C' }}>
-                  {activity.detail}
+                  {activity.description}
                 </Text>
-                <Text className={styles.activityTime}>{activity.time}</Text>
+                <Text className={styles.activityTime}>{activity.date}</Text>
               </View>
-              <Text className={styles.activityAction}>{activity.status}</Text>
+              {activity.status === 'pending' ? (
+                <View
+                  className={styles.activityAction}
+                  style={{
+                    background: '#FFF7E6',
+                    color: '#FA8C16',
+                    border: '1rpx solid #FFD591',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleConfirmActivity(activity.id, activity.title)}
+                >
+                  待确认
+                </View>
+              ) : (
+                <Text
+                  className={styles.activityAction}
+                  style={{
+                    background: '#F6FFED',
+                    color: '#52C41A',
+                    border: '1rpx solid #B7EB8F'
+                  }}
+                >
+                  已确认
+                </Text>
+              )}
             </View>
           ))}
         </View>

@@ -169,3 +169,201 @@
     transform: scale(0.98);
   }
 }
+
+.modalMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $page-padding;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 640rpx;
+  max-height: 85vh;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.25);
+}
+
+.modalHeader {
+  background: linear-gradient(135deg, $color-purple 0%, $color-purple-dark 100%);
+  padding: $spacing-xl $spacing-lg;
+  text-align: center;
+  color: $color-text-white;
+}
+
+.modalAvatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 auto $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60rpx;
+}
+
+.modalName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.modalSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+  display: block;
+}
+
+.modalBody {
+  flex: 1;
+  padding: $spacing-lg;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.detailSection {
+  margin-bottom: $spacing-xl;
+
+  &:last-of-type {
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.detailSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.detailSectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.detailActionBtn {
+  @include button-reset;
+  padding: 8rpx 20rpx;
+  background: $color-purple-bg;
+  color: $color-purple;
+  font-size: $font-size-xs;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.detailEmpty {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+  padding: $spacing-lg;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+
+.detailTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.detailTagItem {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 16rpx 10rpx 20rpx;
+  background: $color-error-bg;
+  border-radius: $radius-sm;
+  gap: 10rpx;
+
+  &:active {
+    opacity: 0.75;
+  }
+}
+
+.detailTagItemChronic {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 16rpx 10rpx 20rpx;
+  background: #FFF3E0;
+  border-radius: $radius-sm;
+  gap: 10rpx;
+
+  &:active {
+    opacity: 0.75;
+  }
+}
+
+.detailTagText {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.detailTagRemove {
+  font-size: 28rpx;
+  color: $color-error;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.detailHint {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  display: block;
+}
+
+.deleteMemberBtn {
+  @include button-reset;
+  width: 100%;
+  padding: $spacing-md;
+  background: $color-error-bg;
+  color: $color-error;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-md;
+  margin-top: $spacing-md;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.modalFooter {
+  padding: $spacing-md $spacing-lg $spacing-lg;
+  border-top: 1rpx solid $color-divider;
+  background: $color-bg-card;
+}
+
+.modalCloseBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: $color-bg-page;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}

@@ -1,15 +1,25 @@
 import React, { useState, useMemo } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Picker, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
 import { getCategoryInfo } from '@/utils'
-import { FamilyMember } from '@/types/medicine'
+import { MedicineTaboo } from '@/types/medicine'
 
 const TaboosPage: React.FC = () => {
-  const { familyMembers, medicines } = useMedicineStore()
+  const {
+    familyMembers,
+    medicines,
+    removeMedicineTaboo,
+    addAllergy,
+    removeAllergy,
+    addMedicineTaboo
+  } = useMedicineStore()
   const [selectedMemberId, setSelectedMemberId] = useState<string>(familyMembers[0]?.id || '')
+  const [showAddTabooModal, setShowAddTabooModal] = useState(false)
+  const [selectedMedicineId, setSelectedMedicineId] = useState('')
+  const [tabooReason, setTabooReason] = useState('')
 
   const selectedMember = useMemo(
     () => familyMembers.find((m) => m.id === selectedMemberId),
@@ -36,8 +46,11 @@ const TaboosPage: React.FC = () => {
     Taro.showModal({
       title: '移除禁忌',
       content: `确定要移除${medicineName}的禁忌标记吗？`,
+      confirmText: '确定移除',
+      confirmColor: '#F53F3F',
       success: (res) => {
         if (res.confirm) {
+          removeMedicineTaboo(medicineId, selectedMemberId)
           Taro.showToast({ title: '已移除', icon: 'success' })
         }
       }
@@ -45,8 +58,77 @@ const TaboosPage: React.FC = () => {
   }
 
   const handleAddAllergy = () => {
-    Taro.showToast({ title: '功能开发中', icon: 'none' })
+    Taro.showModal({
+      title: '添加过敏记录',
+      editable: true,
+      placeholderText: '请输入过敏药物或食物名称',
+      confirmText: '添加',
+      success: (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          const allergy = res.content.trim()
+          if (selectedMember?.allergies.includes(allergy)) {
+            Taro.showToast({ title: '该过敏已存在', icon: 'none' })
+            return
+          }
+          addAllergy(selectedMemberId, allergy)
+          Taro.showToast({ title: '已添加', icon: 'success' })
+        }
+      }
+    })
   }
+
+  const handleRemoveAllergy = (allergy: string) => {
+    Taro.showModal({
+      title: '移除过敏',
+      content: `确定要移除"${allergy}"的过敏记录吗？`,
+      confirmText: '确定移除',
+      confirmColor: '#F53F3F',
+      success: (res) => {
+        if (res.confirm) {
+          removeAllergy(selectedMemberId, allergy)
+          Taro.showToast({ title: '已移除', icon: 'success' })
+        }
+      }
+    })
+  }
+
+  const handleOpenAddTaboo = () => {
+    setSelectedMedicineId('')
+    setTabooReason('')
+    setShowAddTabooModal(true)
+  }
+
+  const handleConfirmAddTaboo = () => {
+    if (!selectedMedicineId) {
+      Taro.showToast({ title: '请选择药品', icon: 'none' })
+      return
+    }
+    if (!tabooReason.trim()) {
+      Taro.showToast({ title: '请输入禁用原因', icon: 'none' })
+      return
+    }
+    const medicine = medicines.find((m) => m.id === selectedMedicineId)
+    if (!medicine) return
+    const taboo: MedicineTaboo = {
+      memberId: selectedMemberId,
+      memberName: selectedMember?.name || '',
+      reason: tabooReason.trim()
+    }
+    addMedicineTaboo(selectedMedicineId, taboo)
+    setShowAddTabooModal(false)
+    Taro.showToast({ title: '已添加禁用药品', icon: 'success' })
+  }
+
+  const availableMedicines = useMemo(() => {
+    return medicines.filter(
+      (m) => !m.taboos.some((t) => t.memberId === selectedMemberId)
+    )
+  }, [medicines, selectedMemberId])
+
+  const medicinePickerRange = availableMedicines.map((m) => m.name)
+  const selectedMedicineIndex = availableMedicines.findIndex(
+    (m) => m.id === selectedMedicineId
+  )
 
   return (
     <ScrollView scrollY className={styles.taboosPage} enhanced showScrollbar={false}>
@@ -91,7 +173,11 @@ const TaboosPage: React.FC = () => {
             <View className={styles.tagList}>
               {selectedMember.allergies.length > 0 ? (
                 selectedMember.allergies.map((allergy, index) => (
-                  <View key={index} className={styles.tagItem}>
+                  <View
+                    key={index}
+                    className={styles.tagItem}
+                    onClick={() => handleRemoveAllergy(allergy)}
+                  >
                     <Text>{allergy}</Text>
                   </View>
                 ))
@@ -110,8 +196,8 @@ const TaboosPage: React.FC = () => {
                 <Text className={styles.sectionIcon}>💊</Text>
                 禁用药品
               </Text>
-              <Text className={styles.sectionMore} onClick={handleManageMember}>
-                管理
+              <Text className={styles.sectionMore} onClick={handleOpenAddTaboo}>
+                添加
               </Text>
             </View>
             {tabooMedicines.length > 0 ? (
@@ -238,6 +324,160 @@ const TaboosPage: React.FC = () => {
           )
         })}
       </View>
+
+      {showAddTabooModal && (
+        <View
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999
+          }}
+          onClick={() => setShowAddTabooModal(false)}
+        >
+          <View
+            style={{
+              width: '85%',
+              maxWidth: '600rpx',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '20rpx',
+              padding: '40rpx',
+              boxSizing: 'border-box'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Text
+              style={{
+                fontSize: '34rpx',
+                fontWeight: 600,
+                color: '#1D2129',
+                display: 'block',
+                marginBottom: '32rpx'
+              }}
+            >
+              添加禁用药品
+            </Text>
+
+            <Text
+              style={{
+                fontSize: '26rpx',
+                color: '#4E5969',
+                display: 'block',
+                marginBottom: '12rpx'
+              }}
+            >
+              选择药品
+            </Text>
+            <Picker
+              mode='selector'
+              range={medicinePickerRange}
+              value={selectedMedicineIndex >= 0 ? selectedMedicineIndex : 0}
+              onChange={(e) => {
+                const idx = Number(e.detail.value)
+                if (availableMedicines[idx]) {
+                  setSelectedMedicineId(availableMedicines[idx].id)
+                }
+              }}
+            >
+              <View
+                style={{
+                  height: '80rpx',
+                  lineHeight: '80rpx',
+                  backgroundColor: '#F2F3F5',
+                  borderRadius: '12rpx',
+                  padding: '0 24rpx',
+                  fontSize: '28rpx',
+                  color: selectedMedicineId ? '#1D2129' : '#86909C',
+                  marginBottom: '28rpx'
+                }}
+              >
+                {selectedMedicineId
+                  ? availableMedicines.find((m) => m.id === selectedMedicineId)?.name
+                  : '请点击选择药品'}
+              </View>
+            </Picker>
+
+            <Text
+              style={{
+                fontSize: '26rpx',
+                color: '#4E5969',
+                display: 'block',
+                marginBottom: '12rpx'
+              }}
+            >
+              禁用原因
+            </Text>
+            <View
+              style={{
+                backgroundColor: '#F2F3F5',
+                borderRadius: '12rpx',
+                padding: '20rpx 24rpx',
+                marginBottom: '40rpx'
+              }}
+            >
+              <Textarea
+                placeholder='请输入禁用原因（如：过敏反应、孕妇禁用等）'
+                placeholderStyle='color: #86909C; fontSize: 26rpx'
+                value={tabooReason}
+                onInput={(e) => setTabooReason(e.detail.value)}
+                maxlength={100}
+                autoHeight
+                style={{
+                  width: '100%',
+                  minHeight: '120rpx',
+                  fontSize: '26rpx',
+                  color: '#1D2129',
+                  lineHeight: 1.5
+                }}
+              />
+            </View>
+
+            <View
+              style={{
+                display: 'flex',
+                gap: '24rpx'
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  height: '80rpx',
+                  lineHeight: '80rpx',
+                  textAlign: 'center',
+                  backgroundColor: '#F2F3F5',
+                  borderRadius: '12rpx',
+                  fontSize: '28rpx',
+                  color: '#4E5969'
+                }}
+                onClick={() => setShowAddTabooModal(false)}
+              >
+                取消
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  height: '80rpx',
+                  lineHeight: '80rpx',
+                  textAlign: 'center',
+                  backgroundColor: '#165DFF',
+                  borderRadius: '12rpx',
+                  fontSize: '28rpx',
+                  color: '#FFFFFF'
+                }}
+                onClick={handleConfirmAddTaboo}
+              >
+                确定添加
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
   )
 }
