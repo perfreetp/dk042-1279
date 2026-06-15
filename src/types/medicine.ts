@@ -66,6 +66,25 @@ export interface Medicine {
   updatedAt: string
 }
 
+// 采购项来源类型
+export type PurchaseSource =
+  | 'low_stock'        // 低于最低库存
+  | 'near_min'         // 接近最低库存
+  | 'fast_consumption'  // 盘点发现消耗偏快
+  | 'manual'           // 手动添加
+  | 'seasonal'         // 季节建议
+  | 'auto'             // 自动触发（使用后自动生成）
+
+// 采购建议计算结果
+export interface PurchaseSuggestion {
+  suggestedQuantity: number
+  suggestedPackages: number
+  perPackageCount: number
+  estimatedDays: number
+  reasons: string[]
+  finalReason: string
+}
+
 // 采购项
 export interface PurchaseItem {
   id: string
@@ -81,6 +100,8 @@ export interface PurchaseItem {
   purchaserName?: string
   purchaseDate?: string
   estimatedPrice?: number
+  source?: PurchaseSource
+  suggestion?: PurchaseSuggestion
 }
 
 // 季节采购建议

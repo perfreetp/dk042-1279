@@ -244,6 +244,21 @@
   @include text-ellipsis;
 }
 
+.itemNameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.sourceTag {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+}
+
 .itemSpec {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
@@ -304,6 +319,50 @@
   background: #E6F7F4;
   border-radius: $radius-sm;
   border-left: 4rpx solid $color-primary;
+}
+
+.itemSuggestionDetail {
+  margin-top: $spacing-sm;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, #E8F3FF 0%, #F3E8FF 100%);
+  border-radius: $radius-md;
+}
+
+.suggestionTitle {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestionMain {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestionReasons {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestionReason {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.suggestionDays {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  padding-top: $spacing-xs;
+  border-top: 1rpx dashed rgba(45, 184, 167, 0.3);
 }
 
 .suggestedText {

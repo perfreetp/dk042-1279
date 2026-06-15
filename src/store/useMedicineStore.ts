@@ -12,7 +12,9 @@ import {
   UsageRecord,
   UsageTimelineItem,
   InventoryDiffReport,
-  InventoryDiffItem
+  InventoryDiffItem,
+  PurchaseSuggestion,
+  PurchaseSource
 } from '@/types/medicine'
 import {
   mockMedicines,
@@ -20,7 +22,11 @@ import {
   mockPurchaseItems,
   mockInventoryRecords
 } from '@/data/mockData'
-import { checkMedicineWarnings, generateId, formatDate, getCategoryInfo } from '@/utils'
+import {
+  checkMedicineWarnings, generateId, formatDate, getCategoryInfo,
+  parseSpecification, calcPackagesFromQuantity, calculateConsumptionRate,
+  calculatePurchaseSuggestion
+} from '@/utils'
 
 // 持久化存储的 Key
 const STORAGE_KEY = 'family_medicine_chest_data_v1'
@@ -74,6 +80,7 @@ interface MedicineState {
   removeChronicDisease: (memberId: string, disease: string) => void
 
   // ================ 采购管理 ================
+  calculatePurchaseSuggestion: (medicineId: string, customQuantity?: number) => PurchaseSuggestion
   addPurchaseItem: (item: Omit<PurchaseItem, 'id'>, generateActivity?: boolean) => void
   togglePurchaseItem: (id: string, generateActivity?: boolean) => void
   markItemPurchased: (id: string, purchaserId: string, generateActivity?: boolean) => void
@@ -407,7 +414,8 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
             quantity: recommendedQty,
             unit: '盒',
             reason: `库存不足（剩余 ${newRemaining}${med.unit}），使用后自动补货建议`,
-            isPurchased: false
+            isPurchased: false,
+            source: 'auto'
           },
           false
         )
@@ -566,9 +574,83 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
   },
 
   // ================ 采购管理 ================
+  calculatePurchaseSuggestion: (medicineId, customQuantity) => {
+    const { medicines, purchaseItems } = get()
+    const medicine = medicines.find((m) => m.id === medicineId)
+
+    if (!medicine) {
+      return {
+        suggestedQuantity: 1,
+        suggestedPackages: 1,
+        perPackageCount: 1,
+        estimatedDays: 30,
+        reasons: ['药品信息不存在'],
+        finalReason: '药品信息不存在'
+      }
+    }
+
+    const usageRecords = medicine.usageRecords || []
+    const monthlySpeed = calculateConsumptionRate(medicine)
+    const { perPackage: perPackageCount, packageUnit } = parseSpecification(
+      medicine.specification,
+      medicine.unit
+    )
+
+    const existingPendingQty = purchaseItems
+      .filter((p) => p.medicineId === medicineId && !p.isPurchased)
+      .reduce((sum, p) => sum + p.quantity, 0)
+
+    const targetStock = Math.max(medicine.minStock * 2, monthlySpeed * 3)
+
+    const currentTotal = medicine.remainingQuantity + existingPendingQty
+    const gap = Math.max(0, targetStock - currentTotal)
+
+    let suggestedQuantity = customQuantity !== undefined ? customQuantity : Math.max(gap, perPackageCount)
+    suggestedQuantity = Math.ceil(suggestedQuantity)
+
+    const suggestedPackages = calcPackagesFromQuantity(
+      suggestedQuantity,
+      medicine.specification,
+      medicine.unit
+    )
+    const actualQty = suggestedPackages * perPackageCount
+
+    const totalAfterPurchase = medicine.remainingQuantity + actualQty + existingPendingQty
+    const estimatedDays = monthlySpeed > 0
+      ? Math.round((totalAfterPurchase / monthlySpeed) * 30)
+      : 365
+
+    const reasons: string[] = []
+    if (monthlySpeed > 0) {
+      reasons.push(`月消耗约${monthlySpeed}${medicine.unit}`)
+    } else {
+      reasons.push('暂无历史消耗数据')
+    }
+    reasons.push(`当前库存${medicine.remainingQuantity}${medicine.unit}`)
+    if (existingPendingQty > 0) {
+      reasons.push(`已在采购列表${existingPendingQty}${medicine.unit}`)
+    }
+    reasons.push(`需补充到${targetStock}${medicine.unit}（3个月用量）`)
+    if (perPackageCount > 1) {
+      reasons.push(`每${packageUnit}含${perPackageCount}${medicine.unit}`)
+    }
+
+    const finalReason = reasons.join('，')
+
+    return {
+      suggestedQuantity: actualQty,
+      suggestedPackages,
+      perPackageCount,
+      estimatedDays,
+      reasons,
+      finalReason
+    }
+  },
+
   addPurchaseItem: (item, generateActivity = false) => {
+    const suggestion = get().calculatePurchaseSuggestion(item.medicineId, item.quantity)
     set((state) => ({
-      purchaseItems: [{ ...item, id: generateId() }, ...state.purchaseItems]
+      purchaseItems: [{ ...item, id: generateId(), suggestion }, ...state.purchaseItems]
     }))
     if (generateActivity) {
       const operator = get().getCurrentUser()!
@@ -657,12 +739,16 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       const purchaser = familyMembers.find((m) => m.id === purchaserId)
       if (!item || item.isPurchased) return
 
+      const { perPackage, packageUnit } = parseSpecification(item.specification, item.unit)
+      const packages = perPackage >= 1 ? Math.round(item.quantity / perPackage) : item.quantity
+      const restockQty = item.quantity
+
       const medicine = medicines.find((m) => m.id === item.medicineId)
       if (medicine) {
         set((state) => ({
           medicines: state.medicines.map((m) =>
             m.id === item.medicineId
-              ? { ...m, remainingQuantity: m.remainingQuantity + item.quantity, updatedAt: new Date().toISOString().split('T')[0] }
+              ? { ...m, remainingQuantity: m.remainingQuantity + restockQty, updatedAt: new Date().toISOString().split('T')[0] }
               : m
           )
         }))
@@ -685,10 +771,19 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       if (purchaser) {
         get().addActivity(
           'mark_purchased',
-          `${purchaser.name} 补充了 ${item.medicineName} ${item.quantity}${item.unit}，库存已更新`,
-          `共 ${item.quantity}${item.unit}，请家人确认`,
+          `${purchaser.name} 购买了 ${item.medicineName} ${packages}${packageUnit}（${restockQty}${item.unit}）`,
+          `折算 ${restockQty}${item.unit} 补入库存，请家人确认`,
           '🛒',
-          { medicineId: item.medicineId, medicineName: item.medicineName, quantity: item.quantity, restockedQuantity: item.quantity }
+          {
+            medicineId: item.medicineId,
+            medicineName: item.medicineName,
+            quantity: item.quantity,
+            restockedQuantity: restockQty,
+            packages,
+            packageUnit,
+            restockQty,
+            perPackage
+          }
         )
       }
       count++
@@ -970,9 +1065,10 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
   },
 
   addLowStockToPurchase: (report) => {
-    const { lowStockItems, nearMinStockItems } = report
+    const { lowStockItems, nearMinStockItems, decreasedItems } = report
     const itemsToAdd = [...lowStockItems, ...nearMinStockItems]
     const existingPurchaseIds = get().purchaseItems.filter(p => !p.isPurchased).map(p => p.medicineId)
+    const decreasedMap = new Map(decreasedItems.map(d => [d.medicineId, d]))
     let count = 0
 
     itemsToAdd.forEach((item) => {
@@ -980,7 +1076,26 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       const medicine = get().medicines.find((m) => m.id === item.medicineId)
       if (!medicine) return
 
-      const suggestedQty = Math.max(medicine.totalQuantity - item.afterQuantity, medicine.minStock * 2)
+      const decreasedItem = decreasedMap.get(item.medicineId)
+      let source: PurchaseSource
+      let reason: string
+
+      if (decreasedItem && decreasedItem.diffPercent < -30 && decreasedItem.diffQuantity < 0) {
+        source = 'fast_consumption'
+        reason = '盘点发现消耗偏快，建议补充'
+      } else if (item.isLowStock) {
+        source = 'low_stock'
+        reason = '低于最低库存，建议补充'
+      } else if (item.nearMinStock) {
+        source = 'near_min'
+        reason = '接近最低库存，建议补充'
+      } else {
+        source = 'manual'
+        reason = '建议补充'
+      }
+
+      const suggestion = calculatePurchaseSuggestion(medicine, item.afterQuantity, [reason])
+      const suggestedQty = suggestion.suggestedQuantity
 
       get().addPurchaseItem({
         medicineId: medicine.id,
@@ -989,8 +1104,10 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
         category: medicine.category,
         quantity: suggestedQty,
         unit: medicine.unit,
-        reason: item.isLowStock ? '库存不足，自动补充' : '接近最低库存，建议补充',
-        isPurchased: false
+        reason,
+        isPurchased: false,
+        source,
+        suggestion
       }, false)
       count++
     })

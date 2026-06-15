@@ -5,8 +5,8 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
 import { mockSeasonalTips } from '@/data/mockData'
-import { getCategoryInfo, getCurrentSeason, getSeasonName, calculateConsumptionRate } from '@/utils'
-import { PurchaseItem } from '@/types/medicine'
+import { getCategoryInfo, getCurrentSeason, getSeasonName, calculateConsumptionRate, parseSpecification } from '@/utils'
+import { PurchaseItem, PurchaseSuggestion, PurchaseSource } from '@/types/medicine'
 
 type TabType = 'pending' | 'purchased'
 
@@ -197,6 +197,7 @@ const PurchasePage: React.FC = () => {
                 consumption={getConsumption(item.medicineId)}
                 currentStock={medicine?.remainingQuantity || 0}
                 minStock={medicine?.minStock || 0}
+                suggestion={item.suggestion}
                 onToggle={() => handleToggleItem(item.id)}
                 onDelete={() => handleDeleteItem(item.id)}
                 isSelected={selectedItems.has(item.id)}
@@ -253,6 +254,7 @@ interface PurchaseItemCardProps {
   consumption: number
   currentStock: number
   minStock: number
+  suggestion?: PurchaseSuggestion
   onToggle: () => void
   onDelete: () => void
   isSelected: boolean
@@ -264,21 +266,34 @@ const PurchaseItemCard: React.FC<PurchaseItemCardProps> = ({
   consumption,
   currentStock,
   minStock,
+  suggestion,
   onToggle,
   onDelete,
   isSelected
 }) => {
   const categoryInfo = getCategoryInfo(item.category)
 
-  const getSuggestedInfo = () => {
-    if (consumption <= 0) return null
-    const daysCover = Math.round((item.quantity / consumption) * 30)
-    const afterStock = currentStock + item.quantity
-    const isLowStock = currentStock <= minStock
-    return { daysCover, afterStock, isLowStock }
+  const getSourceLabel = (source?: PurchaseSource) => {
+    switch (source) {
+      case 'low_stock':
+        return { label: '🔴 低库存', style: { color: '#F53F3F', bgColor: '#FFECE8' } }
+      case 'near_min':
+        return { label: '🟠 接近低库存', style: { color: '#FF7D00', bgColor: '#FFF2E6' } }
+      case 'fast_consumption':
+        return { label: '🟣 消耗偏快', style: { color: '#722ED1', bgColor: '#F3E8FF' } }
+      case 'auto':
+        return { label: '⚡ 自动建议', style: { color: '#4C9AFF', bgColor: '#E8F3FF' } }
+      case 'manual':
+        return { label: '👤 手动添加', style: { color: '#86909C', bgColor: '#F2F3F5' } }
+      case 'seasonal':
+        return { label: '🌿 季节建议', style: { color: '#00B42A', bgColor: '#E8FFEA' } }
+      default:
+        return null
+    }
   }
 
-  const suggestedInfo = getSuggestedInfo()
+  const sourceLabel = getSourceLabel(item.source)
+  const { packageUnit: pkgUnit } = parseSpecification(item.specification, item.unit)
 
   return (
     <View
@@ -297,7 +312,17 @@ const PurchaseItemCard: React.FC<PurchaseItemCardProps> = ({
       <View className={styles.itemContent}>
         <View className={styles.itemHeader}>
           <View className={styles.itemInfo}>
-            <Text className={styles.itemName}>{item.medicineName}</Text>
+            <View className={styles.itemNameRow}>
+              <Text className={styles.itemName}>{item.medicineName}</Text>
+              {sourceLabel && (
+                <Text
+                  className={styles.sourceTag}
+                  style={{ backgroundColor: sourceLabel.style.bgColor, color: sourceLabel.style.color }}
+                >
+                  {sourceLabel.label}
+                </Text>
+              )}
+            </View>
             <Text className={styles.itemSpec}>{item.specification}</Text>
           </View>
           <View
@@ -316,13 +341,28 @@ const PurchaseItemCard: React.FC<PurchaseItemCardProps> = ({
           </Text>
           <Text className={styles.itemReason}>{item.reason}</Text>
         </View>
-        {suggestedInfo && (
+        {suggestion && (
+          <View className={styles.itemSuggestionDetail}>
+            <Text className={styles.suggestionTitle}>💡 采购建议</Text>
+            <Text className={styles.suggestionMain}>
+              建议购买 {suggestion.suggestedPackages} {pkgUnit} = {suggestion.suggestedQuantity}{item.unit}
+            </Text>
+            <View className={styles.suggestionReasons}>
+              {suggestion.reasons.slice(0, 3).map((reason, idx) => (
+                <Text key={idx} className={styles.suggestionReason}>• {reason}</Text>
+              ))}
+            </View>
+            <Text className={styles.suggestionDays}>
+              预计可用 <Text style={{ color: '#4C9AFF', fontWeight: 'bold' }}>{suggestion.estimatedDays}</Text> 天
+            </Text>
+          </View>
+        )}
+        {!suggestion && consumption > 0 && (
           <View className={styles.itemSuggested}>
             <Text className={styles.suggestedText}>
               当前库存 {currentStock}{item.unit}
-              {suggestedInfo.isLowStock && <Text style={{ color: '#F53F3F' }}>（不足）</Text>}
-              ，补货后 {suggestedInfo.afterStock}{item.unit}
-              ，约可用{suggestedInfo.daysCover}天
+              {currentStock <= minStock && <Text style={{ color: '#F53F3F' }}>（不足）</Text>}
+              ，补货后约可用{Math.round(((currentStock + item.quantity) / consumption) * 30)}天
             </Text>
           </View>
         )}

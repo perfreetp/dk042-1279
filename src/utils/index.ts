@@ -1,4 +1,4 @@
-import { Medicine, MedicineCategory, WarningItem, CategoryInfo } from '@/types/medicine'
+import { Medicine, MedicineCategory, WarningItem, CategoryInfo, PurchaseSuggestion } from '@/types/medicine'
 
 export const categoryList: CategoryInfo[] = [
   { key: 'cold', name: '感冒用药', color: '#4C9AFF', bgColor: '#E8F3FF', icon: '🤧' },
@@ -118,4 +118,81 @@ export const getSeasonName = (season: string): string => {
 
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2)
+}
+
+// ================ 规格解析与采购计算（新增） ================
+
+export const parseSpecification = (specification: string, unit: string): { perPackage: number; packageUnit: string } => {
+  if (!specification) return { perPackage: 1, packageUnit: unit === '瓶' || unit === '盒' ? unit : '盒' }
+
+  const starMatch = specification.match(/\*(\d+)/)
+  if (starMatch) {
+    const perPackage = parseInt(starMatch[1], 10)
+    if (perPackage > 0) {
+      if (unit === '瓶' || unit === '盒') return { perPackage, packageUnit: unit }
+      if (unit === 'ml' || specification.includes('ml')) return { perPackage, packageUnit: '瓶' }
+      return { perPackage, packageUnit: '盒' }
+    }
+  }
+
+  if (unit === '瓶' || specification.includes('ml')) {
+    return { perPackage: 1, packageUnit: '瓶' }
+  }
+
+  return { perPackage: 1, packageUnit: '盒' }
+}
+
+export const calcPackagesFromQuantity = (stockQuantity: number, specification: string, unit: string): number => {
+  const { perPackage } = parseSpecification(specification, unit)
+  if (perPackage <= 1) return stockQuantity
+  return Math.max(1, Math.ceil(stockQuantity / perPackage))
+}
+
+export const calcQuantityFromPackages = (packages: number, specification: string, unit: string): number => {
+  const { perPackage } = parseSpecification(specification, unit)
+  return Math.max(1, packages * perPackage)
+}
+
+export const calculatePurchaseSuggestion = (
+  medicine: Medicine,
+  currentQuantity: number,
+  customReasons?: string[]
+): PurchaseSuggestion => {
+  const { perPackage, packageUnit } = parseSpecification(medicine.specification, medicine.unit)
+  const monthlyConsumption = calculateConsumptionRate(medicine)
+
+  const targetStock = Math.max(medicine.totalQuantity, medicine.minStock * 2)
+  const needQuantity = Math.max(0, targetStock - currentQuantity)
+
+  const suggestedPackages = Math.max(1, Math.ceil(needQuantity / Math.max(perPackage, 1)))
+  const suggestedQuantity = suggestedPackages * perPackage
+
+  const estimatedDays = monthlyConsumption > 0
+    ? Math.round((suggestedQuantity / monthlyConsumption) * 30)
+    : 90
+
+  const reasons: string[] = []
+  if (customReasons && customReasons.length > 0) {
+    reasons.push(...customReasons)
+  } else {
+    if (currentQuantity <= medicine.minStock) {
+      reasons.push(`当前库存 ${currentQuantity}${medicine.unit} 低于最低库存 ${medicine.minStock}${medicine.unit}`)
+    } else if (currentQuantity <= medicine.minStock * 1.5) {
+      reasons.push(`当前库存 ${currentQuantity}${medicine.unit} 接近最低库存 ${medicine.minStock}${medicine.unit}`)
+    }
+    if (monthlyConsumption > 0) {
+      reasons.push(`月均消耗约 ${monthlyConsumption}${medicine.unit}`)
+    }
+  }
+
+  const finalReason = reasons.length > 0 ? reasons.join('；') : '建议补充库存'
+
+  return {
+    suggestedQuantity,
+    suggestedPackages,
+    perPackageCount: perPackage,
+    estimatedDays,
+    reasons,
+    finalReason
+  }
 }

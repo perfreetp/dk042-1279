@@ -340,11 +340,18 @@ const InventoryPage: React.FC = () => {
                   <View key={item.medicineId} className={styles.reportItem}>
                     <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
                     <View className={styles.reportItemInfo}>
-                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <View className={styles.reportItemNameRow}>
+                        <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                        {item.diffPercent < -30 && (
+                          <Text className={`${styles.reportTag} ${styles.tagFastConsumption}`}>
+                            🟣 消耗偏快
+                          </Text>
+                        )}
+                      </View>
                       <Text className={styles.reportItemChange}>
                         {item.beforeQuantity} → {item.afterQuantity} {item.unit}
                         <Text className={styles.reportItemDiff}>
-                          {' '}({item.diffQuantity} {item.unit})
+                          {' '}({item.diffQuantity} {item.unit}, {item.diffPercent}%)
                         </Text>
                       </Text>
                     </View>
@@ -360,7 +367,12 @@ const InventoryPage: React.FC = () => {
                   <View key={item.medicineId} className={styles.reportItem}>
                     <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
                     <View className={styles.reportItemInfo}>
-                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <View className={styles.reportItemNameRow}>
+                        <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                        <Text className={`${styles.reportTag} ${styles.tagLowStock}`}>
+                          🔴 低库存
+                        </Text>
+                      </View>
                       <Text className={styles.reportItemLow}>
                         当前 {item.afterQuantity} {item.unit}，低于最低库存
                       </Text>
@@ -377,7 +389,12 @@ const InventoryPage: React.FC = () => {
                   <View key={item.medicineId} className={styles.reportItem}>
                     <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
                     <View className={styles.reportItemInfo}>
-                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <View className={styles.reportItemNameRow}>
+                        <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                        <Text className={`${styles.reportTag} ${styles.tagNearMin}`}>
+                          🟠 接近低库存
+                        </Text>
+                      </View>
                       <Text className={styles.reportItemNear}>
                         当前 {item.afterQuantity} {item.unit}，接近最低库存
                       </Text>

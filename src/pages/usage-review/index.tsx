@@ -34,26 +34,48 @@ interface MedicineRanking {
 const UsageReviewPage: React.FC = () => {
   const router = useRouter()
   const routeMemberId = router.params.memberId || ''
+  const routeMedicineId = router.params.medicineId || ''
 
-  const { familyMembers, getUsageTimeline } = useMedicineStore()
+  const { familyMembers, medicines, getUsageTimeline } = useMedicineStore()
 
   const [period, setPeriod] = useState<PeriodType>('month')
   const [selectedMemberId, setSelectedMemberId] = useState<string>(routeMemberId)
+  const [selectedMedicineId, setSelectedMedicineId] = useState<string>(routeMedicineId)
 
   const memberOptions = useMemo(() => {
     return [
       { id: '', name: '全部成员' },
       ...familyMembers.map((m) => ({ id: m.id, name: m.name }))
     ]
-  }, [familyMembers])
+  }, [familyMembers, selectedMedicineId])
 
   const memberPickerRange = memberOptions.map((m) => m.name)
   const selectedMemberIndex = memberOptions.findIndex((m) => m.id === selectedMemberId)
 
+  const routeMedicine = useMemo(() => {
+    return medicines.find((m) => m.id === routeMedicineId)
+  }, [medicines, routeMedicineId, selectedMedicineId])
+
+  const medicineOptions = useMemo(() => {
+    if (routeMedicineId) {
+      return [
+        { id: '', name: '全部药品' },
+        { id: routeMedicineId, name: `当前药品（${routeMedicine?.name || routeMedicineId}）` }
+      ]
+    }
+    return [
+      { id: '', name: '全部药品' },
+      ...medicines.map((m) => ({ id: m.id, name: m.name }))
+    ]
+  }, [routeMedicineId, routeMedicine, medicines, selectedMedicineId])
+
+  const medicinePickerRange = medicineOptions.map((m) => m.name)
+  const selectedMedicineIndex = medicineOptions.findIndex((m) => m.id === selectedMedicineId)
+
   const days = PERIOD_CONFIG[period].days
   const timeline = useMemo(
-    () => getUsageTimeline({ memberId: selectedMemberId || undefined, days }),
-    [getUsageTimeline, selectedMemberId, days]
+    () => getUsageTimeline({ memberId: selectedMemberId || undefined, medicineId: selectedMedicineId || undefined, days }),
+    [getUsageTimeline, selectedMemberId, selectedMedicineId, days]
   )
 
   const overviewStats = useMemo(() => {
@@ -80,7 +102,7 @@ const UsageReviewPage: React.FC = () => {
       involvedMedicineCount,
       topMemberName
     }
-  }, [timeline, familyMembers])
+  }, [timeline, familyMembers, selectedMedicineId])
 
   const memberAggregations = useMemo(() => {
     const map: Record<string, MemberAggregation> = {}
@@ -117,7 +139,7 @@ const UsageReviewPage: React.FC = () => {
     return Object.values(map)
       .filter((m) => m.usageCount > 0)
       .sort((a, b) => b.usageCount - a.usageCount)
-  }, [timeline, familyMembers])
+  }, [timeline, familyMembers, selectedMedicineId])
 
   const medicineRankings = useMemo(() => {
     const map: Record<string, MedicineRanking> = {}
@@ -142,12 +164,12 @@ const UsageReviewPage: React.FC = () => {
     })
 
     return Object.values(map).sort((a, b) => b.totalQuantity - a.totalQuantity)
-  }, [timeline, days])
+  }, [timeline, days, selectedMedicineId])
 
   const maxRankingQuantity = useMemo(() => {
     if (medicineRankings.length === 0) return 1
     return medicineRankings[0].totalQuantity
-  }, [medicineRankings])
+  }, [medicineRankings, selectedMedicineId])
 
   const getRankingIndexClass = (index: number) => {
     if (index === 0) return styles.rankingIndex1
@@ -163,6 +185,13 @@ const UsageReviewPage: React.FC = () => {
     }
   }
 
+  const handleMedicineChange = (e: { detail: { value: number | number[] } }) => {
+    const idx = Number(e.detail.value)
+    if (medicineOptions[idx]) {
+      setSelectedMedicineId(medicineOptions[idx].id)
+    }
+  }
+
   const handlePeriodChange = (p: PeriodType) => {
     setPeriod(p)
   }
@@ -175,7 +204,11 @@ const UsageReviewPage: React.FC = () => {
     <ScrollView scrollY className={styles.usageReviewPage} enhanced showScrollbar={false}>
       <View className={styles.headerSection}>
         <Text className={styles.headerTitle}>用药复盘</Text>
-        <Text className={styles.headerDesc}>了解全家用药趋势</Text>
+        <Text className={styles.headerDesc}>
+          {routeMedicineId
+            ? `查看【${routeMedicine?.name || routeMedicineId}】复盘`
+            : '了解全家用药趋势'}
+        </Text>
       </View>
 
       <View className={styles.filterBar}>
@@ -203,6 +236,24 @@ const UsageReviewPage: React.FC = () => {
                 {selectedMemberIndex >= 0
                   ? memberOptions[selectedMemberIndex].name
                   : '全部成员'}
+              </Text>
+              <Text className={styles.memberPickerArrow}>▼</Text>
+            </View>
+          </Picker>
+        </View>
+
+        <View className={styles.memberPicker}>
+          <Picker
+            mode='selector'
+            range={medicinePickerRange}
+            value={selectedMedicineIndex >= 0 ? selectedMedicineIndex : 0}
+            onChange={handleMedicineChange}
+          >
+            <View className={styles.memberPickerTrigger}>
+              <Text>
+                {selectedMedicineIndex >= 0
+                  ? medicineOptions[selectedMedicineIndex].name
+                  : '全部药品'}
               </Text>
               <Text className={styles.memberPickerArrow}>▼</Text>
             </View>
