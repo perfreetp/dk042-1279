@@ -169,6 +169,7 @@ export interface FamilyActivity {
     memberName?: string
     quantity?: number
     changeSummary?: string
+    restockedQuantity?: number
   }
 }
 
@@ -209,6 +210,7 @@ export interface InventoryDiffReport {
   decreasedItems: InventoryDiffItem[]
   lowStockItems: InventoryDiffItem[]
   nearMinStockItems: InventoryDiffItem[]
+  allCheckedItems: InventoryDiffItem[]
   canAddToPurchase: boolean
 }
 

@@ -7,7 +7,8 @@ export default defineAppConfig({
     'pages/family/index',
     'pages/medicine-detail/index',
     'pages/add-medicine/index',
-    'pages/member-manage/index'
+    'pages/member-manage/index',
+    'pages/usage-review/index'
   ],
   window: {
     backgroundTextStyle: 'light',

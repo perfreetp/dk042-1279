@@ -20,7 +20,7 @@ const UsageTimeline: React.FC<UsageTimelineProps> = ({
   title = '用药记录',
   showFilter = true
 }) => {
-  const { familyMembers, getUsageTimeline } = useMedicineStore()
+  const { familyMembers, getUsageTimeline, medicines } = useMedicineStore()
 
   const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(propMemberId)
   const [selectedDays, setSelectedDays] = useState<number>(propDays)
@@ -51,7 +51,7 @@ const UsageTimeline: React.FC<UsageTimelineProps> = ({
       medicineId,
       days: selectedDays
     })
-  }, [selectedMemberId, selectedDays, medicineId, getUsageTimeline])
+  }, [selectedMemberId, selectedDays, medicineId, getUsageTimeline, medicines])
 
   const groupedData = useMemo(() => {
     const groups: Record<string, UsageTimelineItem[]> = {}
@@ -64,7 +64,7 @@ const UsageTimeline: React.FC<UsageTimelineProps> = ({
     return Object.entries(groups).sort((a, b) => {
       return new Date(b[0]).getTime() - new Date(a[0]).getTime()
     })
-  }, [timelineData])
+  }, [timelineData, medicines])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)

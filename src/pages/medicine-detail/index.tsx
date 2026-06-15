@@ -410,7 +410,19 @@ const MedicineDetailPage: React.FC = () => {
         )}
 
         <View className={styles.section}>
-          <UsageTimeline medicineId={medicineId} days={30} title="用药时间线" showFilter={true} />
+          <View className={styles.sectionHeader}>
+            <Text className={styles.sectionTitle}>
+              <Text className={styles.sectionIcon}>📊</Text>
+              用药时间线
+            </Text>
+            <Text
+              className={styles.sectionMore}
+              onClick={() => Taro.navigateTo({ url: `/pages/usage-review/index?medicineId=${medicineId}` })}
+            >
+              复盘 ›
+            </Text>
+          </View>
+          <UsageTimeline medicineId={medicineId} days={30} showFilter={true} />
         </View>
 
         {medicine.notes && (

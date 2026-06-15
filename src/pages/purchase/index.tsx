@@ -187,17 +187,22 @@ const PurchasePage: React.FC = () => {
         </View>
 
         {displayItems.length > 0 ? (
-          displayItems.map((item) => (
-            <PurchaseItemCard
-              key={item.id}
-              item={item}
-              isPurchased={activeTab === 'purchased'}
-              consumption={getConsumption(item.medicineId)}
-              onToggle={() => handleToggleItem(item.id)}
-              onDelete={() => handleDeleteItem(item.id)}
-              isSelected={selectedItems.has(item.id)}
-            />
-          ))
+          displayItems.map((item) => {
+            const medicine = medicines.find((m) => m.id === item.medicineId)
+            return (
+              <PurchaseItemCard
+                key={item.id}
+                item={item}
+                isPurchased={activeTab === 'purchased'}
+                consumption={getConsumption(item.medicineId)}
+                currentStock={medicine?.remainingQuantity || 0}
+                minStock={medicine?.minStock || 0}
+                onToggle={() => handleToggleItem(item.id)}
+                onDelete={() => handleDeleteItem(item.id)}
+                isSelected={selectedItems.has(item.id)}
+              />
+            )
+          })
         ) : (
           <View className={styles.emptyState}>
             <Text className={styles.emptyIcon}>🛒</Text>
@@ -246,6 +251,8 @@ interface PurchaseItemCardProps {
   item: PurchaseItem
   isPurchased: boolean
   consumption: number
+  currentStock: number
+  minStock: number
   onToggle: () => void
   onDelete: () => void
   isSelected: boolean
@@ -255,11 +262,23 @@ const PurchaseItemCard: React.FC<PurchaseItemCardProps> = ({
   item,
   isPurchased,
   consumption,
+  currentStock,
+  minStock,
   onToggle,
   onDelete,
   isSelected
 }) => {
   const categoryInfo = getCategoryInfo(item.category)
+
+  const getSuggestedInfo = () => {
+    if (consumption <= 0) return null
+    const daysCover = Math.round((item.quantity / consumption) * 30)
+    const afterStock = currentStock + item.quantity
+    const isLowStock = currentStock <= minStock
+    return { daysCover, afterStock, isLowStock }
+  }
+
+  const suggestedInfo = getSuggestedInfo()
 
   return (
     <View
@@ -297,11 +316,20 @@ const PurchaseItemCard: React.FC<PurchaseItemCardProps> = ({
           </Text>
           <Text className={styles.itemReason}>{item.reason}</Text>
         </View>
+        {suggestedInfo && (
+          <View className={styles.itemSuggested}>
+            <Text className={styles.suggestedText}>
+              当前库存 {currentStock}{item.unit}
+              {suggestedInfo.isLowStock && <Text style={{ color: '#F53F3F' }}>（不足）</Text>}
+              ，补货后 {suggestedInfo.afterStock}{item.unit}
+              ，约可用{suggestedInfo.daysCover}天
+            </Text>
+          </View>
+        )}
         <View className={styles.itemFooter}>
           {consumption > 0 ? (
             <Text className={styles.consumptionInfo}>
-              月消耗约 {consumption} {item.unit}，可用
-              {Math.round((item.quantity / consumption) * 30)}天
+              月消耗约 {consumption} {item.unit}
             </Text>
           ) : (
             <Text className={styles.consumptionInfo}>暂无消耗数据</Text>

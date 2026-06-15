@@ -118,7 +118,7 @@ const InventoryPage: React.FC = () => {
       notes: changes.length > 0 ? `调整了${changes.length}种药品数量` : '库存无变化'
     })
 
-    const report = generateInventoryDiffReport(changes)
+    const report = generateInventoryDiffReport(changes, checkedItems)
     setDiffReport(report)
     setShowDiffReport(true)
 

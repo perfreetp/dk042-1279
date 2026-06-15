@@ -84,7 +84,7 @@ interface MedicineState {
   // ================ 盘点管理 ================
   addInventoryRecord: (record: Omit<InventoryRecord, 'id'>, generateActivity?: boolean) => void
   updateMedicineQuantity: (medicineId: string, newQuantity: number) => void
-  generateInventoryDiffReport: (changes: InventoryRecord['changes']) => InventoryDiffReport
+  generateInventoryDiffReport: (changes: InventoryRecord['changes'], checkedIds: Set<string>) => InventoryDiffReport
   addLowStockToPurchase: (report: InventoryDiffReport) => number
 
   // ================ 用药日历 ================
@@ -652,10 +652,21 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
   markItemsPurchased: (ids, purchaserId) => {
     let count = 0
     ids.forEach((id) => {
-      const { purchaseItems, familyMembers } = get()
+      const { purchaseItems, familyMembers, medicines } = get()
       const item = purchaseItems.find((p) => p.id === id)
       const purchaser = familyMembers.find((m) => m.id === purchaserId)
       if (!item || item.isPurchased) return
+
+      const medicine = medicines.find((m) => m.id === item.medicineId)
+      if (medicine) {
+        set((state) => ({
+          medicines: state.medicines.map((m) =>
+            m.id === item.medicineId
+              ? { ...m, remainingQuantity: m.remainingQuantity + item.quantity, updatedAt: new Date().toISOString().split('T')[0] }
+              : m
+          )
+        }))
+      }
 
       set((state) => ({
         purchaseItems: state.purchaseItems.map((p) =>
@@ -674,10 +685,10 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       if (purchaser) {
         get().addActivity(
           'mark_purchased',
-          `${purchaser.name} 标记已购买：${item.medicineName}`,
+          `${purchaser.name} 补充了 ${item.medicineName} ${item.quantity}${item.unit}，库存已更新`,
           `共 ${item.quantity}${item.unit}，请家人确认`,
           '🛒',
-          { medicineId: item.medicineId, medicineName: item.medicineName, quantity: item.quantity }
+          { medicineId: item.medicineId, medicineName: item.medicineName, quantity: item.quantity, restockedQuantity: item.quantity }
         )
       }
       count++
@@ -887,9 +898,10 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
   },
 
   // ================ 盘点差异报告（需求4） ================
-  generateInventoryDiffReport: (changes) => {
+  generateInventoryDiffReport: (changes, checkedIds) => {
     const { medicines } = get()
     const diffItems: InventoryDiffItem[] = []
+    const changedIds = new Set(changes.map((c) => c.medicineId))
 
     changes.forEach((change) => {
       const medicine = medicines.find((m) => m.id === change.medicineId)
@@ -916,6 +928,28 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       })
     })
 
+    checkedIds.forEach((id) => {
+      if (changedIds.has(id)) return
+      const medicine = medicines.find((m) => m.id === id)
+      if (!medicine) return
+      if (medicine.remainingQuantity > medicine.minStock * 1.5) return
+
+      const categoryInfo = getCategoryInfo(medicine.category)
+      diffItems.push({
+        medicineId: medicine.id,
+        medicineName: medicine.name,
+        medicineIcon: categoryInfo.icon,
+        category: medicine.category,
+        beforeQuantity: medicine.remainingQuantity,
+        afterQuantity: medicine.remainingQuantity,
+        diffQuantity: 0,
+        diffPercent: 0,
+        unit: medicine.unit,
+        isLowStock: medicine.remainingQuantity <= medicine.minStock,
+        nearMinStock: medicine.remainingQuantity <= medicine.minStock * 1.5 && medicine.remainingQuantity > medicine.minStock
+      })
+    })
+
     const decreasedItems = diffItems.filter((i) => i.diffQuantity < 0)
       .sort((a, b) => a.diffQuantity - b.diffQuantity)
     const lowStockItems = diffItems.filter((i) => i.isLowStock)
@@ -925,11 +959,12 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
       .some(i => !existingPurchaseIds.includes(i.medicineId))
 
     return {
-      totalChecked: changes.length,
-      totalChanged: diffItems.length,
+      totalChecked: checkedIds.size,
+      totalChanged: changes.length,
       decreasedItems,
       lowStockItems,
       nearMinStockItems,
+      allCheckedItems: diffItems,
       canAddToPurchase
     }
   },

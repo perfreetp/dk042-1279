@@ -226,7 +226,13 @@ const FamilyPage: React.FC = () => {
       </View>
 
       <View className={styles.activitySection}>
-        <UsageTimeline days={30} title="全家用药记录" showFilter={true} />
+        <View className={styles.sectionHeader}>
+          <Text className={styles.sectionTitle}>全家用药记录</Text>
+          <Text className={styles.sectionMore} onClick={() => Taro.navigateTo({ url: '/pages/usage-review/index' })}>
+            用药复盘 ›
+          </Text>
+        </View>
+        <UsageTimeline days={30} showFilter={true} />
       </View>
 
       <View style={{ height: '40rpx' }} />

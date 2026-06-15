@@ -298,6 +298,20 @@
   color: $color-text-tertiary;
 }
 
+.itemSuggested {
+  margin-top: $spacing-sm;
+  padding: 8rpx 16rpx;
+  background: #E6F7F4;
+  border-radius: $radius-sm;
+  border-left: 4rpx solid $color-primary;
+}
+
+.suggestedText {
+  font-size: $font-size-xs;
+  color: #0D7A6E;
+  line-height: 1.5;
+}
+
 .deleteBtn {
   font-size: $font-size-xs;
   color: $color-error;
