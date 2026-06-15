@@ -5,6 +5,7 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
 import { getCategoryInfo, daysUntilExpiry, calculateConsumptionRate } from '@/utils'
+import UsageTimeline from '@/components/UsageTimeline'
 
 const MedicineDetailPage: React.FC = () => {
   const router = useRouter()
@@ -19,12 +20,13 @@ const MedicineDetailPage: React.FC = () => {
   } = useMedicineStore()
 
   // 手动刷新：访问时重新拉取
-  const [, setTick] = useState(0)
+  const [tick, setTick] = useState(0)
   useDidShow(() => setTick((t) => t + 1))
 
   const medicine = useMemo(() => getMedicineById(medicineId), [
     medicineId,
-    getMedicineById
+    getMedicineById,
+    tick
   ])
 
   // ============ 使用药品 弹窗 ============
@@ -116,6 +118,7 @@ const MedicineDetailPage: React.FC = () => {
       Taro.showToast({ title: result.message, icon: 'success' })
       setShowUseModal(false)
       setUseQty(1)
+      setTick(t => t + 1)
     } else {
       Taro.showToast({ title: result.message, icon: 'none' })
     }
@@ -405,6 +408,10 @@ const MedicineDetailPage: React.FC = () => {
             </View>
           </View>
         )}
+
+        <View className={styles.section}>
+          <UsageTimeline medicineId={medicineId} days={30} title="用药时间线" showFilter={true} />
+        </View>
 
         {medicine.notes && (
           <View className={styles.section}>

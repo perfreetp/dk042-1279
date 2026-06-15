@@ -5,17 +5,19 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
 import { getCategoryInfo, daysUntilExpiry } from '@/utils'
-import { Medicine } from '@/types/medicine'
+import { Medicine, InventoryDiffReport } from '@/types/medicine'
 
 type FilterType = 'all' | 'low' | 'expiring' | 'checked'
 
 const InventoryPage: React.FC = () => {
-  const { medicines, inventoryRecords, updateMedicine, addInventoryRecord, familyMembers } =
+  const { medicines, inventoryRecords, updateMedicine, addInventoryRecord, familyMembers, generateInventoryDiffReport, addLowStockToPurchase } =
     useMedicineStore()
 
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+  const [showDiffReport, setShowDiffReport] = useState(false)
+  const [diffReport, setDiffReport] = useState<InventoryDiffReport | null>(null)
 
   const initQuantities = () => {
     const qtys: Record<string, number> = {}
@@ -116,13 +118,22 @@ const InventoryPage: React.FC = () => {
       notes: changes.length > 0 ? `调整了${changes.length}种药品数量` : '库存无变化'
     })
 
+    const report = generateInventoryDiffReport(changes)
+    setDiffReport(report)
+    setShowDiffReport(true)
+
+    setCheckedItems(new Set())
+  }
+
+  const handleAddToPurchase = () => {
+    if (!diffReport) return
+    const count = addLowStockToPurchase(diffReport)
     Taro.showToast({
-      title: '盘点完成',
+      title: `已添加 ${count} 项到采购计划`,
       icon: 'success',
       duration: 2000
     })
-
-    setCheckedItems(new Set())
+    setShowDiffReport(false)
   }
 
   const stats = useMemo(() => {
@@ -139,7 +150,8 @@ const InventoryPage: React.FC = () => {
   ]
 
   return (
-    <ScrollView scrollY className={styles.inventoryPage} enhanced showScrollbar={false}>
+    <>
+      <ScrollView scrollY className={styles.inventoryPage} enhanced showScrollbar={false}>
       <View className={styles.headerSection}>
         <Text className={styles.headerTitle}>库存盘点</Text>
         <Text className={styles.headerDesc}>核对药品库存，记录消耗情况</Text>
@@ -288,6 +300,117 @@ const InventoryPage: React.FC = () => {
         </Button>
       </View>
     </ScrollView>
+
+    {showDiffReport && diffReport && (
+      <View className={styles.modalMask} onClick={() => setShowDiffReport(false)}>
+        <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <View className={styles.modalHeader}>
+            <Text className={styles.modalTitle}>盘点差异报告</Text>
+            <Text className={styles.modalSubtitle}>本次盘点结果分析</Text>
+          </View>
+
+          <View className={styles.modalBody}>
+            <View className={styles.reportStats}>
+              <View className={styles.statItem}>
+                <Text className={styles.statValue}>{diffReport.totalChecked}</Text>
+                <Text className={styles.statLabel}>总盘点</Text>
+              </View>
+              <View className={styles.statItem}>
+                <Text className={styles.statValue}>{diffReport.totalChanged}</Text>
+                <Text className={styles.statLabel}>变更数</Text>
+              </View>
+              <View className={styles.statItem}>
+                <Text className={styles.statValue}>{diffReport.decreasedItems.length}</Text>
+                <Text className={styles.statLabel}>减少数</Text>
+              </View>
+              <View className={styles.statItem}>
+                <Text className={styles.statValue}>{diffReport.lowStockItems.length}</Text>
+                <Text className={styles.statLabel}>低库存</Text>
+              </View>
+              <View className={styles.statItem}>
+                <Text className={styles.statValue}>{diffReport.nearMinStockItems.length}</Text>
+                <Text className={styles.statLabel}>接近低库存</Text>
+              </View>
+            </View>
+
+            {diffReport.decreasedItems.length > 0 && (
+              <View className={styles.reportSection}>
+                <Text className={styles.sectionTitle}>📉 库存减少</Text>
+                {diffReport.decreasedItems.map((item) => (
+                  <View key={item.medicineId} className={styles.reportItem}>
+                    <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
+                    <View className={styles.reportItemInfo}>
+                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <Text className={styles.reportItemChange}>
+                        {item.beforeQuantity} → {item.afterQuantity} {item.unit}
+                        <Text className={styles.reportItemDiff}>
+                          {' '}({item.diffQuantity} {item.unit})
+                        </Text>
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {diffReport.lowStockItems.length > 0 && (
+              <View className={styles.reportSection}>
+                <Text className={styles.sectionTitle}>⚠️ 低库存药品</Text>
+                {diffReport.lowStockItems.map((item) => (
+                  <View key={item.medicineId} className={styles.reportItem}>
+                    <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
+                    <View className={styles.reportItemInfo}>
+                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <Text className={styles.reportItemLow}>
+                        当前 {item.afterQuantity} {item.unit}，低于最低库存
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {diffReport.nearMinStockItems.length > 0 && (
+              <View className={styles.reportSection}>
+                <Text className={styles.sectionTitle}>⚡ 接近低库存</Text>
+                {diffReport.nearMinStockItems.map((item) => (
+                  <View key={item.medicineId} className={styles.reportItem}>
+                    <View className={styles.reportItemIcon}>{item.medicineIcon}</View>
+                    <View className={styles.reportItemInfo}>
+                      <Text className={styles.reportItemName}>{item.medicineName}</Text>
+                      <Text className={styles.reportItemNear}>
+                        当前 {item.afterQuantity} {item.unit}，接近最低库存
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {diffReport.decreasedItems.length === 0 &&
+              diffReport.lowStockItems.length === 0 &&
+              diffReport.nearMinStockItems.length === 0 && (
+                <View className={styles.reportEmpty}>
+                  <Text style={{ fontSize: '80rpx', display: 'block', marginBottom: '20rpx' }}>✅</Text>
+                  <Text className={styles.reportEmptyText}>本次盘点无异常，所有药品库存正常</Text>
+                </View>
+              )}
+          </View>
+
+          <View className={styles.modalFooter}>
+            {diffReport.canAddToPurchase && (
+              <Button className={styles.addPurchaseBtn} onClick={handleAddToPurchase}>
+                🛒 一键加入采购计划
+              </Button>
+            )}
+            <Button className={styles.modalCloseBtn} onClick={() => setShowDiffReport(false)}>
+              关闭
+            </Button>
+          </View>
+        </View>
+      </View>
+    )}
+    </>
   )
 }
 

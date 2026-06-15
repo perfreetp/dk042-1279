@@ -16,6 +16,9 @@ const PurchasePage: React.FC = () => {
     togglePurchaseItem,
     removePurchaseItem,
     clearPurchasedItems,
+    markItemPurchased,
+    markItemsPurchased,
+    currentUserId,
     medicines
   } = useMedicineStore()
 
@@ -43,7 +46,6 @@ const PurchasePage: React.FC = () => {
   }
 
   const handleToggleItem = (id: string) => {
-    togglePurchaseItem(id)
     if (activeTab === 'pending') {
       setSelectedItems((prev) => {
         const next = new Set(prev)
@@ -79,11 +81,9 @@ const PurchasePage: React.FC = () => {
   }
 
   const handleMarkPurchased = () => {
-    selectedItems.forEach((id) => {
-      togglePurchaseItem(id)
-    })
+    const count = markItemsPurchased(Array.from(selectedItems), currentUserId)
     setSelectedItems(new Set())
-    Taro.showToast({ title: '已标记为已购买', icon: 'success' })
+    Taro.showToast({ title: `已标记 ${count} 项为已购买`, icon: 'success' })
   }
 
   const handleClearPurchased = () => {

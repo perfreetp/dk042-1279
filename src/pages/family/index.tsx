@@ -3,6 +3,20 @@ import { View, Text, ScrollView, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
 import { useMedicineStore } from '@/store/useMedicineStore'
+import type { ActivityType } from '@/types/medicine'
+import UsageTimeline from '@/components/UsageTimeline'
+
+const activityTypeIcons: Record<ActivityType, string> = {
+  use_medicine: '💊',
+  inventory: '📋',
+  add_medicine: '➕',
+  mark_purchased: '🛒',
+  add_member: '👤',
+  add_taboo: '⚠️',
+  remove_taboo: '⚠️',
+  add_allergy: '🚫',
+  remove_allergy: '🚫'
+}
 
 const FamilyPage: React.FC = () => {
   const {
@@ -40,7 +54,10 @@ const FamilyPage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/member-manage/index' })
   }
 
-  const handleConfirmActivity = (activityId: string, activityTitle: string) => {
+  const handleConfirmActivity = (activityId: string, activityTitle: string, activityStatus: string) => {
+    if (activityStatus !== 'pending') {
+      return
+    }
     Taro.showModal({
       title: '确认动态',
       content: `确认「${activityTitle}」这条动态吗？`,
@@ -148,8 +165,26 @@ const FamilyPage: React.FC = () => {
         <View className={styles.activityList}>
           {sortedActivities.map((activity) => (
             <View key={activity.id} className={styles.activityItem}>
-              <View className={styles.activityAvatar}>
+              <View className={styles.activityAvatar} style={{ position: 'relative' }}>
                 <Text>{activity.operatorAvatar}</Text>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    bottom: '-8rpx',
+                    right: '-8rpx',
+                    fontSize: '20rpx',
+                    background: '#fff',
+                    borderRadius: '50%',
+                    width: '28rpx',
+                    height: '28rpx',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2rpx 8rpx rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {activityTypeIcons[activity.type]}
+                </Text>
               </View>
               <View className={styles.activityContent}>
                 <Text className={styles.activityText}>
@@ -169,7 +204,7 @@ const FamilyPage: React.FC = () => {
                     border: '1rpx solid #FFD591',
                     cursor: 'pointer'
                   }}
-                  onClick={() => handleConfirmActivity(activity.id, activity.title)}
+                  onClick={() => handleConfirmActivity(activity.id, activity.title, activity.status)}
                 >
                   待确认
                 </View>
@@ -182,12 +217,16 @@ const FamilyPage: React.FC = () => {
                     border: '1rpx solid #B7EB8F'
                   }}
                 >
-                  已确认
+                  已确认{activity.confirmerName ? `·${activity.confirmerName}` : ''}
                 </Text>
               )}
             </View>
           ))}
         </View>
+      </View>
+
+      <View className={styles.activitySection}>
+        <UsageTimeline days={30} title="全家用药记录" showFilter={true} />
       </View>
 
       <View style={{ height: '40rpx' }} />

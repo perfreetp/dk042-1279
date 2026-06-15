@@ -172,6 +172,46 @@ export interface FamilyActivity {
   }
 }
 
+// 用药时间线条目
+export interface UsageTimelineItem {
+  id: string
+  date: string
+  medicineId: string
+  medicineName: string
+  medicineIcon: string
+  userId: string
+  userName: string
+  userAvatar: string
+  quantity: number
+  unit: string
+  category: MedicineCategory
+}
+
+// 盘点差异报告条目
+export interface InventoryDiffItem {
+  medicineId: string
+  medicineName: string
+  medicineIcon: string
+  category: MedicineCategory
+  beforeQuantity: number
+  afterQuantity: number
+  diffQuantity: number
+  diffPercent: number
+  unit: string
+  isLowStock: boolean
+  nearMinStock: boolean
+}
+
+// 盘点差异报告
+export interface InventoryDiffReport {
+  totalChecked: number
+  totalChanged: number
+  decreasedItems: InventoryDiffItem[]
+  lowStockItems: InventoryDiffItem[]
+  nearMinStockItems: InventoryDiffItem[]
+  canAddToPurchase: boolean
+}
+
 // 持久化存储的数据结构
 export interface PersistedData {
   medicines: Medicine[]

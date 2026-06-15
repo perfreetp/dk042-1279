@@ -9,7 +9,10 @@ import {
   FamilyActivity,
   ActivityType,
   MedicineTaboo,
-  UsageRecord
+  UsageRecord,
+  UsageTimelineItem,
+  InventoryDiffReport,
+  InventoryDiffItem
 } from '@/types/medicine'
 import {
   mockMedicines,
@@ -17,7 +20,7 @@ import {
   mockPurchaseItems,
   mockInventoryRecords
 } from '@/data/mockData'
-import { checkMedicineWarnings, generateId, formatDate } from '@/utils'
+import { checkMedicineWarnings, generateId, formatDate, getCategoryInfo } from '@/utils'
 
 // 持久化存储的 Key
 const STORAGE_KEY = 'family_medicine_chest_data_v1'
@@ -74,12 +77,18 @@ interface MedicineState {
   addPurchaseItem: (item: Omit<PurchaseItem, 'id'>, generateActivity?: boolean) => void
   togglePurchaseItem: (id: string, generateActivity?: boolean) => void
   markItemPurchased: (id: string, purchaserId: string, generateActivity?: boolean) => void
+  markItemsPurchased: (ids: string[], purchaserId: string) => number
   removePurchaseItem: (id: string) => void
   clearPurchasedItems: () => void
 
   // ================ 盘点管理 ================
   addInventoryRecord: (record: Omit<InventoryRecord, 'id'>, generateActivity?: boolean) => void
   updateMedicineQuantity: (medicineId: string, newQuantity: number) => void
+  generateInventoryDiffReport: (changes: InventoryRecord['changes']) => InventoryDiffReport
+  addLowStockToPurchase: (report: InventoryDiffReport) => number
+
+  // ================ 用药日历 ================
+  getUsageTimeline: (filter?: { memberId?: string; medicineId?: string; days?: number }) => UsageTimelineItem[]
 
   // ================ 家庭成员管理（需求5） ================
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'allergies' | 'chronicDiseases' | 'isAdmin'> & { allergies?: string[]; chronicDiseases?: string[] }) => void
@@ -640,6 +649,43 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
     get().persistToStorage()
   },
 
+  markItemsPurchased: (ids, purchaserId) => {
+    let count = 0
+    ids.forEach((id) => {
+      const { purchaseItems, familyMembers } = get()
+      const item = purchaseItems.find((p) => p.id === id)
+      const purchaser = familyMembers.find((m) => m.id === purchaserId)
+      if (!item || item.isPurchased) return
+
+      set((state) => ({
+        purchaseItems: state.purchaseItems.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                isPurchased: true,
+                purchaserId,
+                purchaserName: purchaser?.name,
+                purchaseDate: new Date().toISOString().split('T')[0]
+              }
+            : p
+        )
+      }))
+
+      if (purchaser) {
+        get().addActivity(
+          'mark_purchased',
+          `${purchaser.name} 标记已购买：${item.medicineName}`,
+          `共 ${item.quantity}${item.unit}，请家人确认`,
+          '🛒',
+          { medicineId: item.medicineId, medicineName: item.medicineName, quantity: item.quantity }
+        )
+      }
+      count++
+    })
+    get().persistToStorage()
+    return count
+  },
+
   removePurchaseItem: (id) => {
     set((state) => ({
       purchaseItems: state.purchaseItems.filter((item) => item.id !== id)
@@ -797,5 +843,123 @@ export const useMedicineStore = create<MedicineState>((set, get) => ({
     const { activities } = get()
     if (!status) return activities
     return activities.filter((a) => a.status === status)
+  },
+
+  // ================ 用药时间线（需求3） ================
+  getUsageTimeline: (filter) => {
+    const { medicines, familyMembers } = get()
+    const { memberId, medicineId, days = 30 } = filter || {}
+
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - days)
+    const cutoffStr = cutoffDate.toISOString().split('T')[0]
+
+    const timeline: UsageTimelineItem[] = []
+
+    medicines.forEach((medicine) => {
+      if (medicineId && medicine.id !== medicineId) return
+      const categoryInfo = getCategoryInfo(medicine.category)
+
+      medicine.usageRecords.forEach((record) => {
+        if (record.date < cutoffStr) return
+        if (memberId && record.userId !== memberId) return
+
+        const user = familyMembers.find((m) => m.id === record.userId)
+        timeline.push({
+          id: `${medicine.id}-${record.date}-${record.userId}-${generateId()}`,
+          date: record.date,
+          medicineId: medicine.id,
+          medicineName: medicine.name,
+          medicineIcon: categoryInfo.icon,
+          userId: record.userId,
+          userName: record.userName || user?.name || '未知',
+          userAvatar: user?.avatar || '👤',
+          quantity: record.quantity,
+          unit: medicine.unit,
+          category: medicine.category
+        })
+      })
+    })
+
+    return timeline.sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
+  },
+
+  // ================ 盘点差异报告（需求4） ================
+  generateInventoryDiffReport: (changes) => {
+    const { medicines } = get()
+    const diffItems: InventoryDiffItem[] = []
+
+    changes.forEach((change) => {
+      const medicine = medicines.find((m) => m.id === change.medicineId)
+      if (!medicine) return
+
+      const categoryInfo = getCategoryInfo(medicine.category)
+      const diffQty = change.afterQuantity - change.beforeQuantity
+      const diffPercent = change.beforeQuantity > 0
+        ? Math.round((diffQty / change.beforeQuantity) * 100)
+        : (diffQty > 0 ? 100 : -100)
+
+      diffItems.push({
+        medicineId: medicine.id,
+        medicineName: medicine.name,
+        medicineIcon: categoryInfo.icon,
+        category: medicine.category,
+        beforeQuantity: change.beforeQuantity,
+        afterQuantity: change.afterQuantity,
+        diffQuantity: diffQty,
+        diffPercent,
+        unit: medicine.unit,
+        isLowStock: change.afterQuantity <= medicine.minStock,
+        nearMinStock: change.afterQuantity <= medicine.minStock * 1.5 && change.afterQuantity > medicine.minStock
+      })
+    })
+
+    const decreasedItems = diffItems.filter((i) => i.diffQuantity < 0)
+      .sort((a, b) => a.diffQuantity - b.diffQuantity)
+    const lowStockItems = diffItems.filter((i) => i.isLowStock)
+    const nearMinStockItems = diffItems.filter((i) => i.nearMinStock)
+    const existingPurchaseIds = get().purchaseItems.filter(p => !p.isPurchased).map(p => p.medicineId)
+    const canAddToPurchase = [...lowStockItems, ...nearMinStockItems]
+      .some(i => !existingPurchaseIds.includes(i.medicineId))
+
+    return {
+      totalChecked: changes.length,
+      totalChanged: diffItems.length,
+      decreasedItems,
+      lowStockItems,
+      nearMinStockItems,
+      canAddToPurchase
+    }
+  },
+
+  addLowStockToPurchase: (report) => {
+    const { lowStockItems, nearMinStockItems } = report
+    const itemsToAdd = [...lowStockItems, ...nearMinStockItems]
+    const existingPurchaseIds = get().purchaseItems.filter(p => !p.isPurchased).map(p => p.medicineId)
+    let count = 0
+
+    itemsToAdd.forEach((item) => {
+      if (existingPurchaseIds.includes(item.medicineId)) return
+      const medicine = get().medicines.find((m) => m.id === item.medicineId)
+      if (!medicine) return
+
+      const suggestedQty = Math.max(medicine.totalQuantity - item.afterQuantity, medicine.minStock * 2)
+
+      get().addPurchaseItem({
+        medicineId: medicine.id,
+        medicineName: medicine.name,
+        specification: medicine.specification,
+        category: medicine.category,
+        quantity: suggestedQty,
+        unit: medicine.unit,
+        reason: item.isLowStock ? '库存不足，自动补充' : '接近最低库存，建议补充',
+        isPurchased: false
+      }, false)
+      count++
+    })
+
+    return count
   }
 }))

@@ -1,0 +1,249 @@
+@use '@/styles/variables.scss' as *;
+
+.timelineContainer {
+  width: 100%;
+  background: $color-bg-page;
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg $spacing-lg $spacing-md;
+}
+
+.timelineTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.timelineCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+}
+
+.filterBar {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $spacing-lg $spacing-md;
+}
+
+.filterItem {
+  flex: 1;
+}
+
+.pickerButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+}
+
+.pickerText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.pickerArrow {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-left: $spacing-xs;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 2 $spacing-lg;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.6;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.timelineList {
+  padding: 0 $spacing-lg $spacing-lg;
+}
+
+.dateGroup {
+  margin-bottom: $spacing-lg;
+}
+
+.dateHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  position: relative;
+}
+
+.dateDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.dateText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+  z-index: 1;
+  background: $color-bg-page;
+  padding: 0 $spacing-xs;
+}
+
+.dateLine {
+  flex: 1;
+  height: 2rpx;
+  background: linear-gradient(90deg, $color-primary-light 0%, transparent 100%);
+  margin-left: $spacing-sm;
+}
+
+.dateItems {
+  padding-left: 8rpx;
+}
+
+.timelineCard {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6rpx;
+    background: linear-gradient(180deg, $color-primary 0%, $color-primary-light 100%);
+  }
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.cardLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.userAvatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-purple-bg 0%, $color-purple-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  border: 3rpx solid $color-bg-card;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.medicineIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.medicineIconText {
+  font-size: 28rpx;
+}
+
+.medicineInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.medicineName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.userName {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.quantityBadge {
+  background: linear-gradient(135deg, $color-primary-bg 0%, $color-primary-light 100%);
+  border-radius: $radius-xs;
+  padding: 4rpx $spacing-sm;
+}
+
+.quantityText {
+  font-size: $font-size-xs;
+  color: $color-primary-dark;
+  font-weight: $font-weight-semibold;
+}
